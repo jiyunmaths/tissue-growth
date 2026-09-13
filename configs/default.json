@@ -1,0 +1,14 @@
+{
+  "backend": "fenicsx",
+  "n": 48,
+  "dt": 0.02,
+  "t_end": 1600.0,
+  "length": 3.0,
+  "max_length": 12.0,
+  "growth_rate": 0.015,
+  "a": 0.1,
+  "b": 0.9,
+  "du": 1.0,
+  "dv": 20.0,
+  "seed": 42
+}

@@ -1,0 +1,11 @@
+{
+  "backend": "fenicsx",
+  "n": 16,
+  "dt": 0.05,
+  "t_end": 5.0,
+  "length": 3.0,
+  "max_length": 6.0,
+  "growth_rate": 0.1,
+  "reaction_scale": 0.0,
+  "noise": 0.0
+}

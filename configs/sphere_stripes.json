@@ -1,0 +1,19 @@
+{
+  "backend": "fenicsx",
+  "pc": "auto",
+  "geometry": "sphere",
+  "n": 64,
+  "dt": 0.02,
+  "t_end": 180.0,
+  "length": 12.0,
+  "max_length": 12.0,
+  "growth_rate": 0.0,
+  "a": 0.025,
+  "b": 1.55,
+  "du": 1.0,
+  "dv": 20.0,
+  "reaction_scale": 1.0,
+  "noise": 0.1,
+  "seed": 42,
+  "snapshot_every": 10.0
+}

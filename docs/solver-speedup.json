@@ -1,0 +1,176 @@
+{
+  "warm_benchmarks": {
+    "before": [
+      {
+        "stage": "growing",
+        "pc": "jacobi",
+        "warm_ms": 25.31335579500592,
+        "first_ms": 30.23098999983631,
+        "mean_iterations": 225.6,
+        "balance_error": 6.011870422130991e-14
+      },
+      {
+        "stage": "growing",
+        "pc": "gamg",
+        "warm_ms": 30.107015854991914,
+        "first_ms": 69.19831199775217,
+        "mean_iterations": 20.0,
+        "balance_error": 4.205441948569184e-14
+      },
+      {
+        "stage": "fixed",
+        "pc": "jacobi",
+        "warm_ms": 15.041609540021454,
+        "first_ms": 15.714681998360902,
+        "mean_iterations": 138.095,
+        "balance_error": 1.8349246863427e-14
+      },
+      {
+        "stage": "fixed",
+        "pc": "gamg",
+        "warm_ms": 17.66667954998411,
+        "first_ms": 72.87016999907792,
+        "mean_iterations": 19.0,
+        "balance_error": 2.3250758011792588e-14
+      }
+    ],
+    "after": [
+      {
+        "stage": "growing",
+        "pc": "jacobi",
+        "warm_ms": 18.717417660009232,
+        "first_ms": 30.121819996566046,
+        "mean_iterations": 166.56,
+        "balance_error": 1.1134863340878242e-13
+      },
+      {
+        "stage": "growing",
+        "pc": "gamg",
+        "warm_ms": 15.5394521350172,
+        "first_ms": 68.98754699795973,
+        "mean_iterations": 13.77,
+        "balance_error": 6.386537067916471e-13
+      },
+      {
+        "stage": "fixed",
+        "pc": "jacobi",
+        "warm_ms": 9.722952645024634,
+        "first_ms": 15.842502005398273,
+        "mean_iterations": 88.23,
+        "balance_error": 6.227432754484025e-13
+      },
+      {
+        "stage": "fixed",
+        "pc": "gamg",
+        "warm_ms": 13.080855719999818,
+        "first_ms": 64.43443799798843,
+        "mean_iterations": 11.28,
+        "balance_error": 4.3824536850755084e-13
+      }
+    ],
+    "auto": [
+      {
+        "stage": "growing",
+        "pc": "auto",
+        "warm_ms": 15.72159246999945,
+        "first_ms": 70.80799899995327,
+        "mean_iterations": 13.77,
+        "balance_error": 6.386537067916471e-13
+      },
+      {
+        "stage": "fixed",
+        "pc": "auto",
+        "warm_ms": 4.3476416200064705,
+        "first_ms": 66.62678899738239,
+        "mean_iterations": 2.0,
+        "balance_error": 1.885196595552758e-15
+      }
+    ]
+  },
+  "full_run": {
+    "before": {
+      "time": 180.0,
+      "length": 6.0,
+      "area": 452.2963960452976,
+      "mean_u": 1.0000000947076495,
+      "mean_v": 0.7660378438221955,
+      "std_u": 0.7391475168443943,
+      "amount_u": 452.29643888122615,
+      "amount_v": 346.47615599508947,
+      "min_u": 0.24255182981618223,
+      "min_v": 0.4165639357091513,
+      "steps": 9000,
+      "rejected": 0,
+      "last_dt": 0.019999999981735073,
+      "step_ms": 15.804281996679492,
+      "compute_seconds": 153.93162754896184,
+      "setup_seconds": 0.3418638360017212,
+      "balance_error": 3.238076980147471e-12,
+      "linear_iterations": 150,
+      "dofs": 32772,
+      "worker_rss_mb": 139.5234375,
+      "process_peak_rss_mb": 139.12109375
+    },
+    "after": {
+      "time": 180.0,
+      "length": 6.0,
+      "area": 452.2963960452976,
+      "mean_u": 1.00000009485699,
+      "mean_v": 0.7660378438618207,
+      "std_u": 0.7391475160148204,
+      "amount_u": 452.2964389487725,
+      "amount_v": 346.476156013012,
+      "min_u": 0.24255183077171902,
+      "min_v": 0.4165639357805982,
+      "steps": 9000,
+      "rejected": 0,
+      "last_dt": 0.019999999981735073,
+      "step_ms": 56.59303499851376,
+      "compute_seconds": 53.15362348705821,
+      "setup_seconds": 0.3701785649973317,
+      "balance_error": 5.1234886175185836e-12,
+      "linear_iterations": 8,
+      "dofs": 32772,
+      "worker_rss_mb": 156.7734375,
+      "process_peak_rss_mb": 182.17578125
+    },
+    "after_provenance": {
+      "created_utc": "2026-09-13T15:31:55.489877+00:00",
+      "platform": "Linux-6.17.0-35-generic-x86_64-with-glibc2.39",
+      "python": "3.12.13 | packaged by conda-forge | (main, Mar  5 2026, 16:50:00) [GCC 14.3.0]",
+      "packages": {
+        "tissue-growth": "0.1.0",
+        "fenics-dolfinx": "0.10.0",
+        "petsc4py": "3.25.5",
+        "numpy": "2.5.3",
+        "scipy": "1.18.1",
+        "pyvista": "0.49.0",
+        "trame": "3.13.2"
+      },
+      "config": {
+        "backend": "fenicsx",
+        "geometry": "sphere",
+        "n": 64,
+        "dt": 0.02,
+        "min_dt": 1e-07,
+        "t_end": 180.0,
+        "length": 3.0,
+        "max_length": 6.0,
+        "growth_rate": 0.02,
+        "a": 0.1,
+        "b": 0.9,
+        "du": 1.0,
+        "dv": 20.0,
+        "reaction_scale": 1.0,
+        "noise": 0.1,
+        "seed": 42,
+        "ksp_rtol": 1e-10,
+        "pc": "auto",
+        "snapshot_every": 5.0,
+        "diagnostic_every": 0.5
+      }
+    },
+    "max_abs_concentration_difference": 2.0130491540371054e-07,
+    "solver_speedup": 2.8959761809360174
+  }
+}

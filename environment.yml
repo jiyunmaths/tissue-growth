@@ -1,0 +1,13 @@
+name: tissue-growth
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python=3.12
+  - fenics-dolfinx=0.10.*
+  - mpich
+  - numpy>=1.26,<3
+  - scipy>=1.12,<2
+  - pip
+  - pip:
+      - -e .[test]
