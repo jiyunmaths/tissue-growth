@@ -1,5 +1,27 @@
 # Validation record
 
+## Spatial niches and bands — 2026-09-13
+
+The new four-field model uses local niche activation, mobile precursor depletion, niche-dependent renewal/differentiation, and differentiated-cell/crowding feedback. Its homogeneous reaction equilibrium is stable without diffusion but unstable to finite-wavelength surface modes in the independent linearization test. Near-uniform starts develop sustained lineage contrast; flat-state criteria from the earlier model are not applied.
+
+Both complete protocols passed: ten establishment cases (five starts at two seeds), continued turnover, and six repair cases per preset (three lesions with and without signal depletion). Population and contrast errors relative to time-matched sham trajectories were below 0.1% in these repair runs. The two presets differ only in precursor supply, held fixed throughout each protocol. The band preset sometimes produces fragmented structures from alternative starts; these screening results do not establish topology robustness, a unique anatomy, or minimality of the feedback rules. Complete reports are [niches](aim1-niches-reference.json) and [bands](aim1-bands-reference.json); equations and limitations are in [SPATIAL_AIM1.md](SPATIAL_AIM1.md).
+
+The full suite with browser tests enabled passed **46 tests**. New checks cover spatial instability, nonuniform establishment and repair with signal depletion, four-field amount balance and snapshot metadata, and browser preset switching. Existing homogeneous and pattern models remain covered. The static [front/back figure](aim1-spatial-patterns.png) was rendered from the reference near-uniform seed-42 trajectories and visually inspected. The surface display interpolates fields for visualization; the solver uses the original finite-element mesh.
+
+## Aim 1 browser dashboard — 2026-09-13
+
+The new `aim1-dashboard` command runs the same organization equations in the existing separate-process browser framework. The live adapter matches the batch trajectory through a shortened final step; selective differentiated-cell depletion leaves renewing cells and niche unchanged. Snapshots retain all three fields, feedback parameters, cumulative turnover, and depletion events, and use an Aim 1-specific schema. They are analysis snapshots, not inputs to the pattern solver's restart command.
+
+The full suite with browser tests enabled passed **41 tests**. Chromium checks covered Aim 1 field switching, run/pause, cell depletion, snapshot content, and reset to a different initial condition, as well as both existing pattern dashboards. The actual Aim 1 page was also inspected in the user's Chrome browser. After the suite, the Aim 1 camera extent was increased for extra surface margin and checked visually. The dashboard provides exploratory trajectories; formal acceptance remains the separate common-parameter batch protocol below.
+
+## Aim 1 common-normal protocol — 2026-09-13
+
+The target-free organization model and its reference protocol are documented in [AIM1.md](AIM1.md). The full `n=24`, `dt=0.02` protocol passed all preregistered establishment, turnover, repair, and imposed-pattern criteria in 94.3 seconds. Five initial states spanning mean occupancy 0.14 to 1.20 converged to mean occupancy 0.638806 and differentiated fraction 0.625000 under one parameterization. Three cell-depletion lesions recovered their mean occupancy within 1% and reduced occupancy CV by at least 90%. Positive integrated proliferation, differentiation, and differentiated loss continued during a stable homeostatic interval. The arbitrary imposed latitudinal pattern decayed to occupancy CV `1.09e-8` rather than being preserved.
+
+Single-mechanism controls were excluded from normal pass/fail criteria. Removing differentiated-to-niche feedback or niche coupling raised established occupancy by 19.6% while spatial smoothing persisted. Removing mechanical feedback raised occupancy 6.10-fold; the lesion became spatially smooth while remaining severely overpopulated. This demonstrates why spatial restoration and population regulation are scored independently. Full diagnostics and the resolved parameterization are stored in [aim1-reference.json](aim1-reference.json).
+
+The focused suite has seven tests covering the evidence criteria, reaction/diffusion amount balance, input validation, and rejection of a named installed target. These tests use a coarser and shorter protocol for routine execution. The complete non-browser suite passed **37 tests**, with two opt-in browser cases skipped; both FEniCSx browser cases then passed separately for the square and sphere dashboards. The reference result is a single deterministic seed and parameterization, not evidence of biological calibration, seed robustness, or mesh/time convergence.
+
 ## Solver acceleration — 2026-09-13
 
 Profiling the original `n=64` growing sphere attributed about 98% of measured step time to diffusion solves. The optimized FEniCSx backend starts CG from its previous solution, reuses the GAMG preconditioner while the diffusion multiplier stays within a factor 1.25 of its setup value, and provides `pc="auto"` to switch to a reused sparse LU factorization when the multiplier repeats. A change in the multiplier switches back to CG/GAMG; the current system matrix is always used. The three sphere presets now select automatic mode. Geometry, time steps, and solver tolerances were unchanged.
@@ -126,4 +148,4 @@ python -m pytest -q
 
 No macOS/Apple Silicon execution, GPU acceleration, MPI domain decomposition, remote desktop deployment, multiuser authentication, or checkpoint transfer between operating systems was tested. The code explicitly limits this release to one MPI rank. Live camera interaction was visually inspected; there is no automated pixel-level validation of scientific values. Numeric values are validated through the solver tests.
 
-The model remains a two-species reaction–diffusion testbed on a prescribed growing square. Developmental lineage regulation, mechanics, and oncogenic perturbations are future model extensions. Passing the tests is not a substitute for convergence studies of each research experiment.
+The original pattern model remains a two-species reaction–diffusion testbed on a prescribed growing surface. The separate Aim 1 module adds abstract lineage, niche, and occupancy feedback on a fixed sphere; force balance and oncogenic perturbations remain future extensions. Passing the tests is not a substitute for convergence studies of each research experiment.

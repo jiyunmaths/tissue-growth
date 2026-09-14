@@ -9,10 +9,15 @@ from .recording import Recorder
 from .solver import Simulation
 
 
-def worker_main(config_data, directory, commands, frames, notices, restart=None):
+def worker_main(config_data, directory, commands, frames, notices, restart=None, organization=None):
     sim = recorder = None
     try:
-        sim = Simulation.load(restart) if restart else Simulation(Config.from_dict(config_data))
+        if organization is not None:
+            from .organization_live import OrganizationSimulation, SpatialOrganizationSimulation
+            model = SpatialOrganizationSimulation if organization.get("model") == "spatial" else OrganizationSimulation
+            sim = model(Config.from_dict(config_data), organization)
+        else:
+            sim = Simulation.load(restart) if restart else Simulation(Config.from_dict(config_data))
         recorder = Recorder(directory, sim)
         recorder.record(sim, force=True)
         notices.put({"type":"ready", "points":sim.ops.points, "triangles":sim.ops.triangles,
@@ -94,12 +99,12 @@ def worker_main(config_data, directory, commands, frames, notices, restart=None)
 
 
 class Worker:
-    def __init__(self, config, directory, restart=None):
+    def __init__(self, config, directory, restart=None, organization=None):
         context = mp.get_context("spawn")
         self.commands = context.Queue(maxsize=64)
         self.frames = context.Queue(maxsize=1)
         self.notices = context.Queue()
-        self.process = context.Process(target=worker_main, args=(config.to_dict(),str(directory),self.commands,self.frames,self.notices,restart), daemon=False)
+        self.process = context.Process(target=worker_main, args=(config.to_dict(),str(directory),self.commands,self.frames,self.notices,restart,organization), daemon=False)
         self.process.start()
         self.closed = False
 

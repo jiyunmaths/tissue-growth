@@ -10,6 +10,20 @@ from .config import Config
 def main():
     parser = argparse.ArgumentParser(description="Growing tissue pattern laboratory")
     sub = parser.add_subparsers(dest="command",required=True)
+    aim1 = sub.add_parser("aim1", help="Run the common-parameter Aim 1 organization protocol")
+    aim1.add_argument("--config", type=Path, default=Path("configs/aim1_normal.json"))
+    aim1.add_argument("--output", type=Path)
+    aim1.add_argument("--n", type=int)
+    aim1.add_argument("--dt", type=float)
+    live = sub.add_parser("aim1-dashboard", help="Explore Aim 1 establishment and cell repair in the browser")
+    live.add_argument("--config", type=Path, default=Path("configs/aim1_niches.json"))
+    live.add_argument("--output", type=Path, default=Path("runs"))
+    live.add_argument("--n", type=int)
+    live.add_argument("--dt", type=float)
+    live.add_argument("--t-end", type=float, default=1000)
+    live.add_argument("--initial", choices=["near_uniform", "random", "low", "high", "mosaic", "segregated", "imposed_pattern"], default="random")
+    live.add_argument("--host", default="127.0.0.1")
+    live.add_argument("--port", type=int, default=8080)
     for name in ("dashboard","run","benchmark"):
         p = sub.add_parser(name)
         p.add_argument("--config",type=Path)
@@ -30,6 +44,35 @@ def main():
             p.add_argument("--steps",type=int,default=100)
     args = parser.parse_args()
     try:
+        if args.command == "aim1-dashboard":
+            from .organization import Aim1Protocol
+            from .dashboard import Dashboard
+            protocol = Aim1Protocol.read(args.config)
+            protocol = replace(protocol, **{key: getattr(args, key) for key in ("n", "dt") if getattr(args, key) is not None})
+            config = Config(backend="scipy", geometry=protocol.geometry, n=protocol.n, dt=protocol.dt,
+                            seed=protocol.seed, length=1, max_length=1, growth_rate=0, t_end=args.t_end)
+            print(f"Open http://{args.host}:{args.port} in your browser", flush=True)
+            Dashboard(config, args.output, organization={"parameters": protocol.to_dict()["parameters"],
+                      "model": getattr(protocol, "model", "homogeneous"), "initial_condition": args.initial}).start(args.host, args.port)
+            return 0
+        if args.command == "aim1":
+            from datetime import datetime, timezone
+            from .organization import Aim1Protocol, run_aim1_protocol
+            protocol = Aim1Protocol.read(args.config)
+            updates = {key:getattr(args,key) for key in ("n", "dt") if getattr(args,key) is not None}
+            protocol = replace(protocol, **updates)
+            output = args.output or Path("runs")/("aim1_"+datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")+".json")
+            if output.exists():
+                parser.error(f"Output already exists: {output}. Choose a new output path.")
+            output.parent.mkdir(parents=True, exist_ok=True)
+            report = run_aim1_protocol(protocol)
+            output.write_text(json.dumps(report, indent=2)+"\n")
+            print(json.dumps({
+                "output": str(output.resolve()),
+                "all_required_evidence_passed": report["criteria"]["all_required_evidence_passed"],
+                "wall_seconds": report["wall_seconds"],
+            }, indent=2))
+            return 0 if report["criteria"]["all_required_evidence_passed"] else 2
         config = Config.read(args.config) if args.config else Config()
         changes = {key:getattr(args,key) for key in ("backend","geometry","pc","n","dt","t_end") if getattr(args,key) is not None}
         config = replace(config,**changes)

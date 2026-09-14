@@ -21,6 +21,8 @@ class Recorder:
                 versions[name] = None
         provenance = {"created_utc":datetime.now(timezone.utc).isoformat(),"platform":platform.platform(),
                       "python":sys.version,"packages":versions,"config":simulation.config.to_dict()}
+        if hasattr(simulation, "provenance"):
+            provenance.update(simulation.provenance())
         (self.directory / "run.json").write_text(json.dumps(provenance, indent=2))
         self.next_diag = simulation.t
         self.next_snapshot = simulation.t

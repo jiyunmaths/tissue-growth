@@ -9,7 +9,7 @@ This repository is an actively developing research prototype. Simulation outputs
 
 It combines a **FEniCSx/PETSc finite-element solver**, a **PyVista/trame browser dashboard**, a separate simulation process, reproducible parameter files, intervention logs, checkpoint restart, and CPU benchmarks. An explicitly selected SciPy finite-element reference backend is included for independent checks and installations without FEniCSx.
 
-**Scientific scope:** this release simulates two abstract signaling species on an isotropically growing **spherical surface in 3D**, with the original square retained as an alternative. Concentrations and diffusion live on the two-dimensional surface; the sphere's interior is not discretized. It does not yet simulate cell lineages, oncogenic mutations, mechanical feedback, or cancer. A local perturbation removes activator signal; it is not a model of cell death or tissue ablation. All quantities are dimensionless.
+**Scientific scope:** the pattern laboratory simulates two abstract signaling species on an isotropically growing **spherical surface in 3D**, with the original square retained as an alternative. Concentrations and diffusion live on the two-dimensional surface; the sphere's interior is not discretized. The spatial Aim 1 model couples renewing and differentiated populations to niche activity and a mobile precursor, supporting renewing-rich niches and bands on a fixed surface. A three-field homogeneous control is also retained. These models do not yet simulate mutations, force balance, clonal competition, or cancer. All quantities are dimensionless.
 
 ![Growing spherical surface in the FEniCSx browser dashboard](docs/sphere-dashboard.png)
 
@@ -20,6 +20,33 @@ tissue-growth dashboard --config configs/sphere.json
 ```
 
 The sphere starts at radius 3 and expands to radius 6. Rotate it with the mouse to inspect both hemispheres. Add `--backend scipy` to explicitly use the reference backend. Installation instructions are below.
+
+## Aim 1: establish and repair normal organization
+
+Open the interactive Aim 1 simulation with:
+
+```bash
+tissue-growth aim1-dashboard --config configs/aim1_niches.json --initial near_uniform
+```
+
+Visit `http://127.0.0.1:8080` and press **Run**. The spatial model establishes renewing-rich niches surrounded by differentiated-rich tissue on a fixed unit sphere. **Renewing-cell fraction** shows the architecture; total cell density may be much smoother. Choose **bands** in the **Spatial preset** menu and press **Reset** to explore connected bands, or launch with `--config configs/aim1_bands.json`. Each preset uses the same feedback rules and differs only in precursor supply. Start near uniform, random, low, high, mosaic, or lineage-segregated to examine establishment without installing a target pattern.
+
+Allow the structure to develop and settle (reference protocol: time 300), then apply a local perturbation and continue running to watch repair. **Also deplete niche signals** removes local signal and precursor as well as cells; uncheck it for cell-only injury. The cards and trace show mean density, lineage contrast, and proliferation flux. Cumulative proliferation and cell loss remain visible when density is stable. **Save snapshot** writes all four fields, parameters, and intervention history. Snapshots are for analysis; the pattern laboratory's `--restart` does not load them. Each run saves diagnostics and provenance under `runs/`.
+
+Local niche activation consumes a faster-diffusing precursor. Niche activity promotes renewal and suppresses differentiation, differentiated cells suppress niche activity, and crowding regulates cell number. No equation contains a target map or an error relative to a prescribed pattern. Equations, parameters, thresholds, and limitations are in [SPATIAL_AIM1.md](docs/SPATIAL_AIM1.md).
+
+Each spatial preset has a separate evidence protocol: five initial conditions at two seeds, a turnover interval, and three lesions with and without signal depletion. Parameters are held fixed across the experiments within each preset:
+
+```bash
+tissue-growth aim1 --config configs/aim1_niches.json --output runs/niches-evidence.json
+tissue-growth aim1 --config configs/aim1_bands.json --output runs/bands-evidence.json
+```
+
+The spatial protocol requires persistent lineage contrast, distinct renewing-rich and differentiated-rich regions, ongoing turnover, and repair relative to an uninjured time-matched trajectory. It reports connected-component counts and field mismatch without forcing restoration at prescribed coordinates. Passing these screens does not establish a unique spot count, band topology, a minimal mechanism, or a tissue-specific anatomical model.
+
+![Renewing-cell niches and connected bands from near-uniform initial conditions](docs/aim1-spatial-patterns.png)
+
+The earlier three-field model remains available through `configs/aim1_normal.json` as a **homogeneous population-control baseline**. Its flat-state criteria and [reference report](docs/aim1-reference.json) do not test the revised spatial aim. Its equations are retained in [AIM1.md](docs/AIM1.md).
 
 ## Simulation methods
 
@@ -436,8 +463,11 @@ See `docs/VALIDATION.md` for what was actually executed in the development envir
 - `recording.py`: run provenance, CSV records, periodic checkpoints.
 - `worker.py`: separate process and bounded display queue.
 - `dashboard.py`: browser application and PyVista field rendering.
+- `organization.py`: homogeneous Aim 1 population-control baseline.
+- `spatial_organization.py`, `spatial_protocol.py`: spatial niches/bands model and establishment/repair evidence.
+- `organization_live.py`: recorded browser trajectories for both Aim 1 models.
 - `cli.py`: dashboard, batch runs, and benchmarks.
-- `configs/`: growing sphere, fixed-radius spot and stripe controls, square baseline, square quick demonstration, and passive-growth examples.
+- `configs/`: Aim 1 common-normal protocol, growing sphere, fixed-radius spot and stripe controls, square baseline, square quick demonstration, and passive-growth examples.
 - `tests/`: numerical, process-control, and browser checks.
 
-Read `docs/MODEL.md` before changing the equations. The next biological extension is a renewing/differentiated-cell module with explicit lineage feedback, followed by mechanically determined growth. The current prototype provides the numerical and interaction framework for those additions.
+Read `docs/MODEL.md` before changing the equations. Aim 1's first biological extension is documented in [docs/AIM1.md](docs/AIM1.md); it is intentionally isolated from the original two-species pattern solver until its common-parameter evidence is established.

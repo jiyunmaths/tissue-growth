@@ -1,0 +1,24 @@
+{
+  "geometry": "sphere",
+  "n": 24,
+  "dt": 0.02,
+  "settle_time": 80.0,
+  "turnover_time": 20.0,
+  "repair_time": 60.0,
+  "seed": 42,
+  "parameters": {
+    "renewing_diffusion": 0.003,
+    "differentiated_diffusion": 0.001,
+    "niche_diffusion": 0.01,
+    "renewal_rate": 1.4,
+    "differentiation_rate": 0.3,
+    "renewing_turnover": 0.03,
+    "differentiated_turnover": 0.18,
+    "niche_recovery": 0.6,
+    "differentiated_feedback": 0.8,
+    "niche_coupling": 1.0,
+    "carrying_capacity": 1.0,
+    "crowding_extrusion": 2.0,
+    "mechanical_feedback": 1.0
+  }
+}

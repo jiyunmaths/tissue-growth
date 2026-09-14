@@ -11,7 +11,7 @@ import pytest
 
 @pytest.mark.browser
 @pytest.mark.skipif(os.environ.get('TISSUE_BROWSER_TEST') != '1',reason='Opt-in browser integration test')
-@pytest.mark.parametrize('geometry', ['square', 'sphere'])
+@pytest.mark.parametrize('geometry', ['square', 'sphere', 'aim1', 'spatial'])
 def test_dashboard_controls(tmp_path, geometry):
     from playwright.sync_api import sync_playwright, expect
     with socket.socket() as sock:
@@ -20,7 +20,11 @@ def test_dashboard_controls(tmp_path, geometry):
     config=Path(__file__).resolve().parents[1]/'configs'/('sphere.json' if geometry == 'sphere' else 'quick_demo.json')
     backend=os.environ.get('TISSUE_TEST_BACKEND','scipy')
     log=(tmp_path/'server.log').open('w')
-    server=subprocess.Popen([sys.executable,'-m','tissue_growth','dashboard','--config',str(config),'--geometry',geometry,'--backend',backend,'--n','16','--dt','0.001','--t-end','1000','--port',str(port),'--output',str(tmp_path/'runs')],stdout=log,stderr=subprocess.STDOUT)
+    args = [sys.executable,'-m','tissue_growth','dashboard','--config',str(config),'--geometry',geometry,'--backend',backend]
+    aim1 = geometry in {'aim1', 'spatial'}
+    if aim1:
+        args = [sys.executable, '-m', 'tissue_growth', 'aim1-dashboard', '--config', str(config.parent/('aim1_niches.json' if geometry == 'spatial' else 'aim1_normal.json'))]
+    server=subprocess.Popen(args+['--n','16','--dt','0.001','--t-end','1000','--port',str(port),'--output',str(tmp_path/'runs')],stdout=log,stderr=subprocess.STDOUT)
     try:
         url=f'http://127.0.0.1:{port}'
         for _ in range(300):
@@ -44,6 +48,12 @@ def test_dashboard_controls(tmp_path, geometry):
             if geometry == 'sphere':
                 expect(page.get_by_label('Longitude / 360°')).to_be_visible()
                 expect(page.locator('.metric-label').nth(1)).to_have_text('Radius')
+            if aim1:
+                expect(page.locator('.metric-label').nth(1)).to_have_text('Mean cell density')
+                page.get_by_role('combobox', name='Displayed field').press('Enter')
+                page.get_by_role('option', name='Niche signal N').click()
+                page.get_by_role('combobox', name='Displayed field').press('Enter')
+                page.get_by_role('option', name='Total cells R + D').click()
             page.screenshot(path=os.environ.get('TISSUE_SCREENSHOT',str(tmp_path/'initial.png')))
             page.get_by_role('button',name='Apply perturbation',exact=True).click()
             expect(page.locator('#run-status')).to_contain_text('Perturb applied',timeout=15000)
@@ -56,12 +66,28 @@ def test_dashboard_controls(tmp_path, geometry):
             page.wait_for_timeout(600)
             assert page.locator('.metric-value').nth(0).inner_text()==time_before
             assert float(time_before)>0
-            page.get_by_label('Linear growth rate (1 / time)').fill('0.03')
-            page.get_by_role('button',name='Apply growth rate',exact=True).click()
-            expect(page.locator('#run-status')).to_contain_text('Growth applied')
-            page.get_by_role('button',name='Save checkpoint',exact=True).click()
+            if not aim1:
+                page.get_by_label('Linear growth rate (1 / time)').fill('0.03')
+                page.get_by_role('button',name='Apply growth rate',exact=True).click()
+                expect(page.locator('#run-status')).to_contain_text('Growth applied')
+            page.get_by_role('button',name='Save snapshot' if aim1 else 'Save checkpoint',exact=True).click()
             expect(page.locator('#run-status')).to_contain_text('Save applied')
             assert list((tmp_path/'runs').glob('*/checkpoint.npz'))
+            if aim1:
+                import json
+                import numpy as np
+                with np.load(next((tmp_path/'runs').glob('*/checkpoint.npz')), allow_pickle=False) as saved:
+                    metadata = json.loads(str(saved['metadata']))
+                    assert metadata['model'] == ('aim1-spatial' if geometry == 'spatial' else 'aim1')
+                    assert saved['c'].shape[0] == (4 if geometry == 'spatial' else 3)
+                    assert any(event['type'] == 'cell_depletion' for event in metadata['events'])
+                    if geometry == 'spatial':
+                        assert any(event.get('erase_signals') for event in metadata['events'])
+                if geometry == 'spatial':
+                    page.get_by_role('combobox', name='Spatial preset').press('Enter')
+                    page.get_by_role('option', name='bands', exact=True).click()
+                page.get_by_role('combobox', name='Starting tissue').press('Enter')
+                page.get_by_role('option', name='low', exact=True).click()
             screenshot=os.environ.get('TISSUE_SCREENSHOT')
             if screenshot:
                 page.screenshot(path=screenshot)
@@ -70,6 +96,13 @@ def test_dashboard_controls(tmp_path, geometry):
             page.get_by_role('button',name='Reset',exact=True).click()
             expect(page.get_by_role('button',name='Run',exact=True)).to_be_enabled(timeout=60000)
             expect(page.locator('.metric-value').nth(0)).to_have_text('0.00')
+            if aim1:
+                expect(page.locator('.metric-value').nth(1)).to_have_text('0.1400')
+            if geometry == 'spatial':
+                page.get_by_role('button', name='Save snapshot', exact=True).click()
+                expect(page.locator('#run-status')).to_contain_text('Save applied')
+                reports = [json.loads(path.read_text()) for path in (tmp_path/'runs').glob('*/run.json')]
+                assert any(row.get('parameters', {}).get('substrate_supply') == 1.65 for row in reports)
             browser.close()
     finally:
         server.terminate()
